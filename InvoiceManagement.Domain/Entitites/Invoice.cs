@@ -27,5 +27,9 @@ namespace InvoiceManagement.Domain.Entitites
         {
             Status = InvoiceStatus.Closed;
         }
+        public void AddAmount(decimal amount)
+        {
+            TotalAmount += amount;
+        }
     }
 }

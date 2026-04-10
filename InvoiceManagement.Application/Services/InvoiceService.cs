@@ -24,7 +24,7 @@ namespace InvoiceManagement.Application.Services
             var invoice = new Invoice
             {
                 Id = Guid.NewGuid(),
-                Number = $"INV-{DateTime.Now:yyyyMMddHHmmss}",
+                Number = $"INV-{DateTime.UtcNow:yyyyMMddHHmmssfff}",
                 CustomerName = request.CustomerName,
                 IssueDate = DateTime.UtcNow,
                 Status = InvoiceStatus.Open,
@@ -66,8 +66,8 @@ namespace InvoiceManagement.Application.Services
             };
 
             _context.InvoiceItems.Add(item);
-            AddAmount(invoice, total);
 
+            invoice.AddAmount(total);
             _context.Invoices.Update(invoice);
 
             await _context.SaveChangesAsync();
@@ -96,6 +96,10 @@ namespace InvoiceManagement.Application.Services
 
         public async Task<InvoiceResponse?> GetByIdAsync(Guid id)
         {
+            _logger.LogInformation(
+                "Fetching invoice {InvoiceId}",
+                id);
+
             var invoice = await _context.Invoices
                 .AsNoTracking()
                 .Include(x => x.Items)
@@ -113,6 +117,10 @@ namespace InvoiceManagement.Application.Services
             DateTime? endDate,
             string? status)
         {
+
+            _logger.LogInformation(
+                "Fetching invoices with filters");
+
             startDate ??= DateTime.UtcNow.Date.AddDays(-30);
 
             var query = _context.Invoices
@@ -160,11 +168,6 @@ namespace InvoiceManagement.Application.Services
                     Justification = x.Justification
                 })]
             };
-        }
-
-        private static void AddAmount(Invoice invoice, decimal total)
-        {
-            invoice.TotalAmount += total;
         }
 
         private static void ValidateItemRequest(
