@@ -104,3 +104,21 @@ Ou pelo terminal:
 ```bash id="rdmpt03"
 dotnet test
 ```
+
+## Extensão do desafio — Frontend
+
+Como diferencial adicional ao desafio técnico, foi desenvolvido também um **frontend web integrado à API**, permitindo a visualização e gerenciamento das faturas de forma visual.
+
+O frontend consome todos os endpoints principais da API, incluindo:
+
+* listagem de faturas
+* filtros por cliente, data e status
+* criação de novas faturas
+* adição de itens
+* fechamento de faturas
+
+Este frontend foi desenvolvido como **extensão do teste para demonstrar uma solução full stack e integração ponta a ponta**.
+
+🔗 Repositório do frontend:
+https://github.com/danitest45/invoice-management-front
+
