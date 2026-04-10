@@ -1,5 +1,4 @@
 ﻿using InvoiceManagement.Application.DTOs.Invoices;
-using InvoiceManagement.Domain.Entitites;
 
 namespace InvoiceManagement.Application.Interfaces
 {

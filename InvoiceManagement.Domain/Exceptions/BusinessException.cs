@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace InvoiceManagement.Domain.Exceptions
+﻿namespace InvoiceManagement.Domain.Exceptions
 {
-    public class BusinessException : Exception
+    public class BusinessException(string message) : Exception(message)
     {
-        public BusinessException(string message) : base(message)
-        {
-        }
     }
 }

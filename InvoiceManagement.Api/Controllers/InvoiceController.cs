@@ -14,7 +14,7 @@ namespace InvoiceManagement.Api.Controllers
     /// </param>
     [ApiController]
     [Route("invoices")]
-    public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
+    public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     {
         private readonly IInvoiceService _invoiceService = invoiceService;
 
@@ -99,18 +99,21 @@ namespace InvoiceManagement.Api.Controllers
         /// Retrieves all invoices with optional filters.
         /// </summary>
         /// <param name="customer">Customer name filter.</param>
-        /// <param name="startDate">Initial issue date filter.</param>
-        /// <param name="endDate">Final issue date filter.</param>
-        /// <param name="status">Invoice status filter.</param>
+        /// <param name="startDate">
+        /// Initial issue date filter (example: 2026-04-10).
+        /// </param>
+        /// <param name="endDate">
+        /// Final issue date filter (example: 2026-04-11).
+        /// </param>
+        /// <param name="status">Invoice status filter (Open or Closed).</param>
         /// <returns>List of filtered invoices.</returns>
-        /// <response code="200">Invoices returned successfully.</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(
             [FromQuery] string? customer,
-            [FromQuery] DateTime? startDate,
-            [FromQuery] DateTime? endDate,
-            [FromQuery] string? status)
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? status = null)
         {
             var invoices = await _invoiceService.GetAllAsync(
                 customer,

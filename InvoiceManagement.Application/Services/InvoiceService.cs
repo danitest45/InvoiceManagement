@@ -45,16 +45,9 @@ namespace InvoiceManagement.Application.Services
 
             var invoice = await _context.Invoices
                 .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.Id == invoiceId);
+                .FirstOrDefaultAsync(x => x.Id == invoiceId) ?? throw new BusinessException("Invoice not found.");
 
-            if (invoice == null)
-                throw new BusinessException("Invoice not found.");
-
-            if (invoice.Status == InvoiceStatus.Closed)
-                throw new BusinessException("Closed invoice cannot be changed.");
-
-            if (string.IsNullOrWhiteSpace(request.Description) || request.Description.Length < 3)
-                throw new BusinessException("Description must have at least 3 characters.");
+            ValidateItemRequest(request, invoice);
 
             var total = request.Quantity * request.UnitPrice;
 
@@ -87,8 +80,7 @@ namespace InvoiceManagement.Application.Services
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync(x => x.Id == invoiceId) ?? throw new BusinessException("Invoice not found.");
 
-
-            if (!invoice.Items.Any())
+            if (invoice.Items.Count == 0)
                 throw new BusinessException(
                     "Cannot close an invoice without items.");
 
@@ -121,7 +113,10 @@ namespace InvoiceManagement.Application.Services
             DateTime? endDate,
             string? status)
         {
+            startDate ??= DateTime.UtcNow.Date.AddDays(-30);
+
             var query = _context.Invoices
+                .AsNoTracking()
                 .Include(x => x.Items)
                 .AsQueryable();
 
@@ -140,9 +135,9 @@ namespace InvoiceManagement.Application.Services
                 query = query.Where(x => x.Status == parsedStatus);
             }
 
-            var invoices = await query.ToListAsync();
+            var invoices = await query.OrderByDescending(x => x.IssueDate).ToListAsync();
 
-            return invoices.Select(MapToResponse).ToList();
+            return [.. invoices.Select(MapToResponse)];
         }
 
         private static InvoiceResponse MapToResponse(Invoice invoice)
@@ -155,7 +150,7 @@ namespace InvoiceManagement.Application.Services
                 IssueDate = invoice.IssueDate,
                 Status = invoice.Status.ToString(),
                 TotalAmount = invoice.TotalAmount,
-                Items = invoice.Items.Select(x => new InvoiceItemResponse
+                Items = [.. invoice.Items.Select(x => new InvoiceItemResponse
                 {
                     Id = x.Id,
                     Description = x.Description,
@@ -163,13 +158,34 @@ namespace InvoiceManagement.Application.Services
                     UnitPrice = x.UnitPrice,
                     TotalItemAmount = x.TotalItemAmount,
                     Justification = x.Justification
-                }).ToList()
+                })]
             };
         }
 
         private static void AddAmount(Invoice invoice, decimal total)
         {
             invoice.TotalAmount += total;
+        }
+
+        private static void ValidateItemRequest(
+            AddInvoiceItemRequest request,
+            Invoice invoice)
+        {
+            if (invoice.Status == InvoiceStatus.Closed)
+                throw new BusinessException("Closed invoice cannot be changed.");
+
+            if (string.IsNullOrWhiteSpace(request.Description) ||
+                request.Description.Length < 3)
+                throw new BusinessException(
+                    "Description must have at least 3 characters.");
+
+            if (request.Quantity <= 0)
+                throw new BusinessException(
+                    "Quantity must be greater than zero.");
+
+            if (request.UnitPrice <= 0)
+                throw new BusinessException(
+                    "Unit price must be greater than zero.");
         }
     }
 }

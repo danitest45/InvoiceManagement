@@ -266,4 +266,56 @@ public class InvoiceServiceTests
 
         result.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Should_Throw_When_Quantity_Is_Less_Than_Or_Equal_To_Zero()
+    {
+        var context = CreateContext();
+        var service = CreateService(context);
+
+        var invoice = await service.CreateAsync(
+            new CreateInvoiceRequest
+            {
+                CustomerName = "Daniel"
+            });
+
+        var action = async () =>
+            await service.AddItemAsync(invoice.Id,
+                new AddInvoiceItemRequest
+                {
+                    Description = "Mouse",
+                    Quantity = 0,
+                    UnitPrice = 100
+                });
+
+        await action.Should()
+            .ThrowAsync<BusinessException>()
+            .WithMessage("Quantity must be greater than zero.");
+    }
+
+    [Fact]
+    public async Task Should_Throw_When_Unit_Price_Is_Less_Than_Or_Equal_To_Zero()
+    {
+        var context = CreateContext();
+        var service = CreateService(context);
+
+        var invoice = await service.CreateAsync(
+            new CreateInvoiceRequest
+            {
+                CustomerName = "Daniel"
+            });
+
+        var action = async () =>
+            await service.AddItemAsync(invoice.Id,
+                new AddInvoiceItemRequest
+                {
+                    Description = "Mouse",
+                    Quantity = 1,
+                    UnitPrice = 0
+                });
+
+        await action.Should()
+            .ThrowAsync<BusinessException>()
+            .WithMessage("Unit price must be greater than zero.");
+    }
 }

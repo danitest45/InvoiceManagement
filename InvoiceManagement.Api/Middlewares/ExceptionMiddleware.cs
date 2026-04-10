@@ -5,10 +5,19 @@ using System.Text.Json;
 
 namespace InvoiceManagement.Api.Middlewares
 {
+    /// <summary>
+    /// Middleware responsible for handling global exceptions
+    /// and formatting error responses.
+    /// </summary>
     public class ExceptionMiddleware(RequestDelegate next)
     {
         private readonly RequestDelegate _next = next;
 
+        /// <summary>
+        /// Intercepts the HTTP request and handles exceptions globally.
+        /// </summary>
+        /// <param name="context">Current HTTP context.</param>
+        /// <returns>Task representing the request pipeline execution.</returns>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -45,6 +54,7 @@ namespace InvoiceManagement.Api.Middlewares
             HttpContext context,
             Exception ex)
         {
+            ArgumentNullException.ThrowIfNull(ex);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 

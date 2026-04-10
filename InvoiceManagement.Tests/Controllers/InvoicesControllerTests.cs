@@ -10,12 +10,12 @@ namespace InvoiceManagement.Tests.Controllers;
 public class InvoicesControllerTests
 {
     private readonly Mock<IInvoiceService> _serviceMock;
-    private readonly InvoicesController _controller;
+    private readonly InvoiceController _controller;
 
     public InvoicesControllerTests()
     {
         _serviceMock = new Mock<IInvoiceService>();
-        _controller = new InvoicesController(_serviceMock.Object);
+        _controller = new InvoiceController(_serviceMock.Object);
     }
 
     [Fact]
