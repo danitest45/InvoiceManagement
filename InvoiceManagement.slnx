@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Itens de Solução/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="InvoiceManagement.Api/InvoiceManagement.Api.csproj" />
+  <Project Path="InvoiceManagement.Application/InvoiceManagement.Application.csproj" Id="bf5a8ce4-a36b-47a8-90eb-ef0b078b04d9" />
+  <Project Path="InvoiceManagement.Domain/InvoiceManagement.Domain.csproj" Id="f4abb77d-60ec-426b-a23a-5b92ebd792f9" />
+  <Project Path="InvoiceManagement.Infrastructure/InvoiceManagement.Infrastructure.csproj" Id="1a8fdd8a-7ec9-43a1-83d2-41d75fb37445" />
+  <Project Path="InvoiceManagement.Tests/InvoiceManagement.Tests.csproj" Id="3abb7d34-2e5c-455d-815e-9a355ee29a62" />
+</Solution>
