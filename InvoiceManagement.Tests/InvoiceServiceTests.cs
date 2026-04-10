@@ -4,6 +4,7 @@ using InvoiceManagement.Application.Services;
 using InvoiceManagement.Domain.Enums;
 using InvoiceManagement.Domain.Exceptions;
 using InvoiceManagement.Tests.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace InvoiceManagement.Tests.Services;
 
@@ -13,7 +14,9 @@ public class InvoiceServiceTests
     public async Task Should_Create_Invoice_Successfully()
     {
         var context = DbContextFactory.Create();
-        var service = new InvoiceService(context);
+        var service = new InvoiceService(
+            context,
+            NullLogger<InvoiceService>.Instance);
 
         var request = new CreateInvoiceRequest
         {
@@ -32,7 +35,9 @@ public class InvoiceServiceTests
     public async Task Should_Throw_When_Item_Above_1000_Has_No_Justification()
     {
         var context = DbContextFactory.Create();
-        var service = new InvoiceService(context);
+        var service = new InvoiceService(
+            context,
+            NullLogger<InvoiceService>.Instance);
 
         var invoice = await service.CreateAsync(new CreateInvoiceRequest
         {
@@ -57,7 +62,9 @@ public class InvoiceServiceTests
     public async Task Should_Recalculate_Total_When_Adding_Item()
     {
         var context = DbContextFactory.Create();
-        var service = new InvoiceService(context);
+        var service = new InvoiceService(
+            context,
+            NullLogger<InvoiceService>.Instance);
 
         var invoice = await service.CreateAsync(new CreateInvoiceRequest
         {
@@ -80,13 +87,23 @@ public class InvoiceServiceTests
     public async Task Should_Not_Allow_Add_Item_When_Invoice_Is_Closed()
     {
         var context = DbContextFactory.Create();
-        var service = new InvoiceService(context);
+        var service = new InvoiceService(
+            context,
+            NullLogger<InvoiceService>.Instance);
 
         var invoice = await service.CreateAsync(new CreateInvoiceRequest
         {
             CustomerName = "Daniel"
         });
 
+        var request = new AddInvoiceItemRequest
+        {
+            Description = "Notebook",
+            Quantity = 1,
+            UnitPrice = 1500,
+            Justification = "Needed"
+        };
+        await service.AddItemAsync(invoice.Id, request);
         await service.CloseAsync(invoice.Id);
 
         var action = async () => await service.AddItemAsync(invoice.Id,
@@ -94,7 +111,8 @@ public class InvoiceServiceTests
             {
                 Description = "Teclado",
                 Quantity = 1,
-                UnitPrice = 100
+                UnitPrice = 100,
+                Justification = "Needed for work"
             });
 
         await action.Should()

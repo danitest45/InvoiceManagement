@@ -1,25 +1,25 @@
-﻿using Microsoft.EntityFrameworkCore;
-using InvoiceManagement.Application.DTOs.Invoices;
+﻿using InvoiceManagement.Application.DTOs.Invoices;
+using InvoiceManagement.Application.Interfaces;
 using InvoiceManagement.Domain.Entitites;
 using InvoiceManagement.Domain.Enums;
 using InvoiceManagement.Domain.Exceptions;
 using InvoiceManagement.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace InvoiceManagement.Application.Services
 {
-    public class InvoiceService
+    public class InvoiceService(AppDbContext context, ILogger<InvoiceService> logger) : IInvoiceService
     {
-        private readonly AppDbContext _context;
-
-        public InvoiceService(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
+        private readonly ILogger<InvoiceService> _logger = logger;
 
         public async Task<Invoice> CreateAsync(CreateInvoiceRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.CustomerName))
                 throw new BusinessException("Customer name is required.");
+
+            _logger.LogInformation("Creating invoice for customer {CustomerName}", request.CustomerName);
 
             var invoice = new Invoice
             {
@@ -39,6 +39,10 @@ namespace InvoiceManagement.Application.Services
 
         public async Task AddItemAsync(Guid invoiceId, AddInvoiceItemRequest request)
         {
+            _logger.LogInformation(
+                "Adding item to invoice {InvoiceId}",
+                invoiceId);
+
             var invoice = await _context.Invoices
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync(x => x.Id == invoiceId);
@@ -69,8 +73,7 @@ namespace InvoiceManagement.Application.Services
             };
 
             _context.InvoiceItems.Add(item);
-
-            invoice.TotalAmount += total;
+            AddAmount(invoice, total);
 
             _context.Invoices.Update(invoice);
 
@@ -79,10 +82,17 @@ namespace InvoiceManagement.Application.Services
 
         public async Task CloseAsync(Guid invoiceId)
         {
+
             var invoice = await _context.Invoices.FindAsync(invoiceId);
 
             if (invoice == null)
                 throw new BusinessException("Invoice not found.");
+
+            if (!invoice.Items.Any())
+                throw new BusinessException(
+                    "Cannot close an invoice without items.");
+
+            _logger.LogInformation("Closing invoice {InvoiceId}", invoiceId);
 
             if (invoice.Status == InvoiceStatus.Closed)
                 throw new BusinessException("Invoice is already closed.");
@@ -92,14 +102,20 @@ namespace InvoiceManagement.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Invoice?> GetByIdAsync(Guid id)
+        public async Task<InvoiceResponse?> GetByIdAsync(Guid id)
         {
-            return await _context.Invoices
+            var invoice = await _context.Invoices
+                .AsNoTracking()
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (invoice == null)
+                return null;
+
+            return MapToResponse(invoice);
         }
 
-        public async Task<List<Invoice>> GetAllAsync(
+        public async Task<List<InvoiceResponse>> GetAllAsync(
             string? customer,
             DateTime? startDate,
             DateTime? endDate,
@@ -124,7 +140,36 @@ namespace InvoiceManagement.Application.Services
                 query = query.Where(x => x.Status == parsedStatus);
             }
 
-            return await query.ToListAsync();
+            var invoices = await query.ToListAsync();
+
+            return invoices.Select(MapToResponse).ToList();
+        }
+
+        private static InvoiceResponse MapToResponse(Invoice invoice)
+        {
+            return new InvoiceResponse
+            {
+                Id = invoice.Id,
+                Number = invoice.Number,
+                CustomerName = invoice.CustomerName,
+                IssueDate = invoice.IssueDate,
+                Status = invoice.Status.ToString(),
+                TotalAmount = invoice.TotalAmount,
+                Items = invoice.Items.Select(x => new InvoiceItemResponse
+                {
+                    Id = x.Id,
+                    Description = x.Description,
+                    Quantity = x.Quantity,
+                    UnitPrice = x.UnitPrice,
+                    TotalItemAmount = x.TotalItemAmount,
+                    Justification = x.Justification
+                }).ToList()
+            };
+        }
+
+        private static void AddAmount(Invoice invoice, decimal total)
+        {
+            invoice.TotalAmount += total;
         }
     }
 }
