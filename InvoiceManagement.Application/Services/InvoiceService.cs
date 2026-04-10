@@ -14,7 +14,7 @@ namespace InvoiceManagement.Application.Services
         private readonly AppDbContext _context = context;
         private readonly ILogger<InvoiceService> _logger = logger;
 
-        public async Task<Invoice> CreateAsync(CreateInvoiceRequest request)
+        public async Task<InvoiceResponse> CreateAsync(CreateInvoiceRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.CustomerName))
                 throw new BusinessException("Customer name is required.");
@@ -34,7 +34,7 @@ namespace InvoiceManagement.Application.Services
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
 
-            return invoice;
+            return MapToResponse(invoice);
         }
 
         public async Task AddItemAsync(Guid invoiceId, AddInvoiceItemRequest request)
@@ -83,10 +83,10 @@ namespace InvoiceManagement.Application.Services
         public async Task CloseAsync(Guid invoiceId)
         {
 
-            var invoice = await _context.Invoices.FindAsync(invoiceId);
+            var invoice = await _context.Invoices
+                .Include(x => x.Items)
+                .FirstOrDefaultAsync(x => x.Id == invoiceId) ?? throw new BusinessException("Invoice not found.");
 
-            if (invoice == null)
-                throw new BusinessException("Invoice not found.");
 
             if (!invoice.Items.Any())
                 throw new BusinessException(

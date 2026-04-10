@@ -1,14 +1,22 @@
 ﻿using InvoiceManagement.Application.DTOs.Invoices;
+using InvoiceManagement.Application.Interfaces;
 using InvoiceManagement.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceManagement.Api.Controllers
 {
+    /// <summary>
+    /// Controller responsible for invoice management operations,
+    /// including creation, querying, item management and closing invoices.
+    /// </summary>
+    /// <param name="invoiceService">
+    /// Service responsible for invoice business operations.
+    /// </param>
     [ApiController]
     [Route("invoices")]
-    public class InvoicesController(InvoiceService invoiceService) : ControllerBase
+    public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
     {
-        private readonly InvoiceService _invoiceService = invoiceService;
+        private readonly IInvoiceService _invoiceService = invoiceService;
 
         /// <summary>
         /// Creates a new invoice with initial status Open.
