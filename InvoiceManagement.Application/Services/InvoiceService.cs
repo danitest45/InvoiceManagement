@@ -123,6 +123,13 @@ namespace InvoiceManagement.Application.Services
 
             startDate ??= DateTime.UtcNow.Date.AddDays(-30);
 
+            if (endDate.HasValue)
+            {
+                endDate = endDate.Value.Date
+                    .AddDays(1)
+                    .AddTicks(-1);
+            }
+
             var query = _context.Invoices
                 .AsNoTracking()
                 .Include(x => x.Items)
