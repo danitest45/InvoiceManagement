@@ -58,15 +58,49 @@ A solução foi organizada em camadas para garantir separação de responsabilid
 
 ## Como executar o projeto
 
-1. Restaurar pacotes
-bash
-dotnet restore
+O projeto foi desenvolvido para ter uma execução simples e rápida.
 
+### Pré-requisitos
 
-2. Atualizar banco de dados
+Antes de executar, é necessário ter instalado:
 
-dotnet ef database update --project InvoiceManagement.Infrastructure --startup-project InvoiceManagement.Api
+* **.NET 8 SDK**
+* **Visual Studio 2022** (recomendado) com workload de ASP.NET e desenvolvimento web
+* **SQL Server LocalDB** (normalmente já vem com o Visual Studio)
 
-3. Executar aplicação
+---
 
-dotnet run --project InvoiceManagement.Api
+### Executando a API
+
+1. Clone o repositório
+
+```bash id="rdmpt01"
+git clone https://github.com/danitest45/InvoiceManagement.git
+```
+
+2. Abra a solution no **Visual Studio**
+
+3. Certifique-se de que o projeto `InvoiceManagement.Api` está como projeto de inicialização
+
+4. Execute a aplicação utilizando o perfil **HTTPS padrão** (`F5`)
+
+> Não é necessário configurar o banco de dados manualmente.
+> A base e as migrations são criadas automaticamente ao iniciar a aplicação.
+
+5. Acesse o Swagger pelo endereço exibido ao executar o projeto, por exemplo:
+
+```text id="rdmpt02"
+https://localhost:xxxx/swagger
+```
+
+---
+
+### Executando os testes
+
+Os testes podem ser executados pelo **Test Explorer** do Visual Studio.
+
+Ou pelo terminal:
+
+```bash id="rdmpt03"
+dotnet test
+```
