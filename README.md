@@ -56,6 +56,32 @@ A solução foi organizada em camadas para garantir separação de responsabilid
 
 ---
 
+##  Decisões técnicas relevantes
+
+Algumas decisões técnicas foram tomadas para garantir clareza, manutenibilidade e aderência a boas práticas:
+
+arquitetura em camadas para separação de responsabilidades
+uso de DTOs para evitar exposição direta das entidades de domínio
+uso de interface na camada de serviço para melhor testabilidade e inversão de dependência
+middleware global para tratamento padronizado de erros
+testes automatizados cobrindo cenários positivos e regras de negócio
+aplicação automática das migrations na inicialização da API para simplificar a execução
+uso de filtros com tratamento de data final inclusiva para melhorar a experiência de consulta
+
+##  Melhorias que seriam realizadas com mais tempo
+
+Com mais tempo disponível, algumas melhorias que poderiam ser implementadas:
+
+* paginação na listagem de faturas
+* autenticação e autorização com JWT
+* deploy em ambiente cloud para disponibilização pública da API e frontend
+* logs estruturados com rastreamento por request
+* versionamento da API
+* containerização com Docker
+* monitoramento e health checks
+
+---
+
 ## Como executar o projeto
 
 O projeto foi desenvolvido para ter uma execução simples e rápida.
